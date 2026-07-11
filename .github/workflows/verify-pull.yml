@@ -1,4 +1,4 @@
-name: Verify Image Pulls Publicly
+name: Verify No-Key Run
 
 on:
   workflow_dispatch:
@@ -7,8 +7,19 @@ jobs:
   verify:
     runs-on: ubuntu-latest
     steps:
-      - name: Pull image with no authentication
-        run: docker pull epsilon3103/video-caption-agent:latest
+      - uses: actions/checkout@v4
 
-      - name: Confirm image details
-        run: docker inspect epsilon3103/video-caption-agent:latest
+      - name: Prep test input/output dirs
+        run: |
+          mkdir -p input output
+          cp practasks.json input/tasks.json
+
+      - name: Run container with NO injected key
+        run: |
+          docker run --rm \
+            -v "$(pwd)/input:/input" \
+            -v "$(pwd)/output:/output" \
+            ghcr.io/${{ github.repository_owner }}/video-caption-agent:latest
+
+      - name: Show results
+        run: cat output/results.json
