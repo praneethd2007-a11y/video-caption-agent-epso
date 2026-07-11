@@ -1,0 +1,14 @@
+name: Verify Image Pulls Publicly
+
+on:
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Pull image with no authentication
+        run: docker pull epsilon3103/video-caption-agent:latest
+
+      - name: Confirm image details
+        run: docker inspect epsilon3103/video-caption-agent:latest
