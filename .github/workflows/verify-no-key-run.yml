@@ -1,0 +1,25 @@
+name: Verify No-Key Run
+
+on:
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Prep test input/output dirs
+        run: |
+          mkdir -p input output
+          cp practasks.json input/tasks.json
+
+      - name: Run container with NO injected key
+        run: |
+          docker run --rm \
+            -v "$(pwd)/input:/input" \
+            -v "$(pwd)/output:/output" \
+            ghcr.io/${{ github.repository_owner }}/video-caption-agent:latest
+
+      - name: Show results
+        run: cat output/results.json
