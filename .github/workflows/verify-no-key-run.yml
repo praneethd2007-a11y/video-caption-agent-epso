@@ -12,7 +12,7 @@ jobs:
       - name: Prep test input/output dirs
         run: |
           mkdir -p input output
-          cp practasks.json input/tasks.json
+          cp tasks.json input/tasks.json
 
       - name: Run container with NO injected key
         run: |
