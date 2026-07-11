@@ -1,6 +1,6 @@
 # Quiptionary
 
-**It doesn't caption your video, it performs it.**
+
 
 Quiptionary is a video captioning agent built for the AMD Developer Hackathon (Track 2). Instead of generating the same flat description with a different for "tone," each requested style is written as a distinct character with its own voice and attitude.
 
