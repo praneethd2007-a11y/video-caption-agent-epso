@@ -6,7 +6,7 @@ import ai_inference
 
 st.set_page_config(page_title="Quiptionary", page_icon="🎬", layout="centered")
 st.title("Quiptionary")
-st.caption("Dynamic video captioning agentic tool")
+st.caption("it doesn't caption your video — it performs it")
 
 # Same palette as the cover image and slide deck
 STYLE_COLORS = {
@@ -36,6 +36,30 @@ def render_caption_box(style, caption):
             </div>
             <div style="font-size:14.5px; line-height:1.5;">
                 {caption}
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+def render_description_box(description):
+    if description.startswith("[DESCRIPTION_FAILED"):
+        st.warning(description)
+        return
+    st.markdown(
+        f"""
+        <div style="
+            border-left: 6px solid #6C63FF;
+            background-color: rgba(255,255,255,0.04);
+            border-radius: 8px;
+            padding: 14px 18px;
+            margin-bottom: 18px;
+        ">
+            <div style="font-weight:700; font-size:13px; color:#6C63FF; margin-bottom:6px; letter-spacing:0.5px;">
+                ACTUAL DESCRIPTION OF THE VIDEO
+            </div>
+            <div style="font-size:14.5px; line-height:1.5;">
+                {description}
             </div>
         </div>
         """,
@@ -91,12 +115,16 @@ if generate:
                 progress.empty()
                 st.error("Couldn't extract frames from this video.")
             else:
-                progress.progress(30, text=f"Got {len(frame_paths)} frames. Starting captions...")
+                # --- Step 3: neutral description first ---
+                progress.progress(25, text="Reading what's actually in the clip...")
+                description = ai_inference.generate_description(frame_paths)
 
-                # --- Step 3: generate each style, advancing the bar per style ---
+                progress.progress(35, text=f"Got {len(frame_paths)} frames. Starting captions...")
+
+                # --- Step 4: generate each styled caption, advancing the bar per style ---
                 results = {}
-                step = 65 // max(len(styles), 1)
-                current = 30
+                step = 60 // max(len(styles), 1)
+                current = 35
 
                 for style in styles:
                     label = style.replace("_", " ")
@@ -110,7 +138,11 @@ if generate:
 
                 st.success("Captions ready!")
 
-                # --- Captions first, in colored boxes ---
+                # --- Neutral description box first ---
+                render_description_box(description)
+
+                # --- Then the styled captions ---
+                st.subheader("Captions")
                 for style in styles:
                     render_caption_box(style, results[style])
 
