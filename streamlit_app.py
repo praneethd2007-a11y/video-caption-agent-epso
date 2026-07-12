@@ -6,7 +6,7 @@ import ai_inference
 
 st.set_page_config(page_title="Quiptionary", page_icon="🎬", layout="centered")
 st.title("Quiptionary")
-st.caption("it doesn't caption your video — it performs it")
+st.caption("Dynamic video captioning agentic tool")
 
 # Same palette as the cover image and slide deck
 STYLE_COLORS = {
