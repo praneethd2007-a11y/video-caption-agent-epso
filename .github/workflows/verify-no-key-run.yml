@@ -12,7 +12,15 @@ jobs:
       - name: Prep test input/output dirs
         run: |
           mkdir -p input output
-          cp practasks.json input/tasks.json
+          cat > input/tasks.json << 'EOF'
+          [
+            {
+              "task_id": "verify-01",
+              "video_url": "https://storage.googleapis.com/amd-hackathon-clips/1860079-uhd_2560_1440_25fps.mp4",
+              "styles": ["formal", "sarcastic"]
+            }
+          ]
+          EOF
 
       - name: Run container with NO injected key
         run: |
