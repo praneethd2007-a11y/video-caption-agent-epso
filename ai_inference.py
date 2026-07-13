@@ -35,7 +35,7 @@ def get_style_prompt(style):
         "4. Describe what is actually happening in plain, everyday words - not camera or photography "
         "terms like 'motion blur', 'temporal exposure', or 'long exposure'. Say what you'd say to a "
         "friend describing the scene, not what a camera manual would say.\n"
-        "5. Keep it to 1-2 sentences, under 35 words.\n"
+        "5. Keep it under 50 words.\n"
         "6. Wrap the caption in exact <caption_output></caption_output> tags, nothing else inside them. "
         "No Markdown, no preamble, no explanation."
     )
