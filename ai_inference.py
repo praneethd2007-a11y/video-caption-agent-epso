@@ -40,7 +40,10 @@ def get_style_prompt(style):
         "4. Do NOT use Markdown formatting (no asterisks, no headers, no bullet points). Plain text only.\n"
         "5. Go straight into the caption - no preamble like 'Bug Report:' or 'Caption:' before the tag.\n"
         "6. Keep the caption to 1-2 sentences, no more than about 30 words total. One punchy, "
-        "specific line beats a paragraph - like a witty caption under a photo, not a description."
+        "specific line beats a paragraph - like a witty caption under a photo, not a description.\n"
+        "7. Write in third person, as an observation ABOUT the scene - never first person ('I', 'we', "
+        "'my'), never speaking directly TO the viewer as 'you'. Describe what is happening, filtered "
+        "through your persona's voice and word choice, not as a character narrating their own experience."
     )
 
     prompts = {
