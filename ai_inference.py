@@ -52,7 +52,68 @@ def get_style_prompt(style):
 
     return prompts.get(style, f"Caption this in a {style} tone.") + anchor + guard
 
+def generate_description(frame_paths):
+    """
+    Generates a plain, neutral description of the video - no persona,
+    just what's actually happening. Used by the Streamlit demo UI to show
+    alongside the styled captions, so viewers can compare each persona
+    against the literal content. Not used by main.py / the Docker submission,
+    since the judged output schema only requires the 4 styled captions.
+    """
+    try:
+        sample = sample_frames(frame_paths, num_samples=4)
 
+        content = [
+            {
+                "type": "image_url",
+                "image_url": {
+                    "url": f"data:image/jpeg;base64,{encode_image(frame_path)}"
+                }
+            }
+            for frame_path in sample
+        ]
+        content.append({
+            "type": "text",
+            "text": (
+                "Describe exactly what is happening in this video sequence in one plain, "
+                "neutral sentence. State only concrete visual facts - objects, people, "
+                "setting, actions, colors, text/signage. No opinion, no tone, no personality."
+                "\n\nWrap your answer in exact <caption_output> and </caption_output> tags, "
+                "nothing else inside them. No Markdown. Respond only in English."
+            )
+        })
+
+        response = client.chat.completions.create(
+            model="accounts/fireworks/models/qwen3p7-plus",
+            messages=[
+                {
+                    "role": "system",
+                    "content": (
+                        "You are a strict data-formatting pipeline. You will receive images. "
+                        "You MUST wrap your final answer inside exact <caption_output> and "
+                        "</caption_output> tags. Do NOT output any thinking process."
+                    )
+                },
+                {"role": "user", "content": content}
+            ],
+            max_tokens=100,
+            temperature=0.3,
+            extra_body={"reasoning_effort": "none"}
+        )
+
+        raw_output = response.choices[0].message.content.strip()
+        match = re.search(r'<caption_output>(.*?)</caption_output>', raw_output, re.DOTALL)
+
+        if match:
+            description = match.group(1).strip()
+            if description:
+                return description
+
+        return "[DESCRIPTION_FAILED: malformed model output]"
+
+    except Exception as e:
+        print(f"  -> API Error (description): {e}")
+        return f"[DESCRIPTION_FAILED: API error: {e}]"
 def sample_frames(frame_paths, num_samples=4):
     '''Gets num_samples evenly spaced frames from the full extracted set, not just a single frame'''
     total = len(frame_paths)
