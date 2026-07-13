@@ -22,32 +22,37 @@ def get_style_prompt(style):
     '''
     prompts for different styles
     '''
+    # Forces the model to ground the caption in one real, specific visual
+    # detail before layering on persona, instead of leaning purely on
+    # mood/metaphor and drifting away from what's actually in the video.
+    anchor = (
+        "\n\nBefore writing, silently pick ONE specific, vivid detail you actually see "
+        "in the frames - a color, an object, an action, text/signage, a number, anything concrete. "
+        "Build your one-line caption around that specific detail, filtered through your persona's voice. "
+        "A caption anchored in one real detail beats one built purely on mood or metaphor."
+    )
+
     guard = (
-        "\n\n### RULES ###\n"
-        "1. Write in third person, describing the scene from outside it - never 'I', 'we', 'my', "
-        "and never speak to the reader as 'you'.\n"
-        "2. Refer to people naturally (a man, a woman, the worker, she, he) - never say 'the subject', "
-        "'biological unit', or any clinical/robotic term for a person.\n"
-        "3. Your caption must cover at least TWO different elements of the scene - for example, the "
-        "setting AND the main action, or the subject AND their surroundings. Never build the entire "
-        "caption around a single object, sign, text, or small detail (like a logo, nail polish, or a "
-        "piece of clothing) - such things can be mentioned in passing, never as the whole focus.\n"
-        "4. Describe what is actually happening in plain, everyday words - not camera or photography "
-        "terms like 'motion blur', 'temporal exposure', or 'long exposure'. Say what you'd say to a "
-        "friend describing the scene, not what a camera manual would say.\n"
-        "5. Keep it under 50 words.\n"
-        "6. Wrap the caption in exact <caption_output></caption_output> tags, nothing else inside them. "
-        "No Markdown, no preamble, no explanation."
+        "\n\n### CRITICAL INSTRUCTIONS ###\n"
+        "1. You MUST wrap your final caption inside exact <caption_output> and </caption_output> tags.\n"
+        "2. Do NOT put anything else inside the tags.\n"
+        "3. Do NOT explain your thinking or write a checklist.\n"
+        "4. Do NOT use Markdown formatting (no asterisks, no headers, no bullet points). Plain text only.\n"
+        "5. Go straight into the caption - no preamble like 'Bug Report:' or 'Caption:' before the tag.\n"
+        "6. Keep the caption to 1-2 sentences, no more than about 30 words total. One punchy, "
+        "specific line beats a paragraph - like a witty caption under a photo, not a description."
     )
 
     prompts = {
-        "formal": "Describe the visual plainly and factually, in simple natural language - like a calm, precise observer stating what is happening. Avoid technical or photographic terminology.",        
-        "sarcastic": "Describe the visual with sharp, biting sarcasm - mock enthusiasm, dripping irony, or exaggerated praise for something painfully ordinary. Make it genuinely cutting, not just mildly unimpressed. Think a cynical friend who can't resist a jab at anything they see.",
-        "humorous_tech": "Describe the visual using a clever tech/programming metaphor that maps onto what's actually happening on screen.",
-        "humorous_non_tech": "Describe the visual with simple, relatable, everyday humor - no technical jargon, no niche references.",
+        "formal": "Analyse the visual, with the cold attitude of HAL-9000 with purely factual, emotionless tone.",
+        "sarcastic": "Analyze the visual with a very deadpan and sarcastic tone and eye-rolling, as if you were forced to deal with mere mortals with a sigh incomparable to your power, describe with incredible wit and condescending tone.",
+        "humorous_tech": "Describe the visual like a tired millenial of workload in his AI job. But focus on the visual, do not divert from the visual heavily towards your 'job'. Use clever technical jargon but make it effective in being absolutely funny and understandably humorous.",
+        "humorous_non_tech": "Give a very funny and relatable attitude when describing the visual sequence as if you were a man who is in his 50s who finds it hard to keep up with the fast growing world. Do not use technical jargon and do not give very niche references."
     }
 
-    return prompts.get(style, f"Caption this in a {style} tone.") + " " + guard
+    return prompts.get(style, f"Caption this in a {style} tone.") + anchor + guard
+
+
 def sample_frames(frame_paths, num_samples=4):
     '''Gets num_samples evenly spaced frames from the full extracted set, not just a single frame'''
     total = len(frame_paths)
@@ -67,7 +72,7 @@ def sample_frames(frame_paths, num_samples=4):
 
 def generate_caption(frame_paths, style):
     """Sends multiple sampled frames and the text prompt to a Fireworks Vision model."""
-    print(f"Generating '{style}' caption......")
+    print(f"Generating '{style}' caption from Qwen....")
 
     try:
         # Sample several frames across the clip instead of just the middle one,
@@ -108,7 +113,7 @@ def generate_caption(frame_paths, style):
                     "content": content
                 }
             ],
-            max_tokens=200,
+            max_tokens=120,
             temperature=0.7,
             extra_body={"reasoning_effort": "none"}
         )
@@ -131,67 +136,4 @@ def generate_caption(frame_paths, style):
     except Exception as e:
         print(f"  -> API Error: {e}")
         return f"[CAPTION_FAILED: '{style}' - API error: {e}]"
-
-
-def generate_description(frame_paths):
-    """
-    Generates a plain, neutral description of the video - no persona,
-    just what's actually happening. Used by the Streamlit demo UI to show
-    alongside the styled captions, so viewers can compare each persona
-    against the literal content. Not used by main.py / the Docker submission,
-    since the judged output schema only requires the 4 styled captions.
-    """
-    try:
-        sample = sample_frames(frame_paths, num_samples=4)
-
-        content = [
-            {
-                "type": "image_url",
-                "image_url": {
-                    "url": f"data:image/jpeg;base64,{encode_image(frame_path)}"
-                }
-            }
-            for frame_path in sample
-        ]
-        content.append({
-            "type": "text",
-            "text": (
-                "Describe exactly what is happening in this video sequence in one plain, "
-                "neutral sentence. State only concrete visual facts - objects, people, "
-                "setting, actions, colors, text/signage. No opinion, no tone, no personality."
-                "\n\nWrap your answer in exact <caption_output> and </caption_output> tags, "
-                "nothing else inside them. No Markdown. Respond only in English."
-            )
-        })
-
-        response = client.chat.completions.create(
-            model="accounts/fireworks/models/qwen3p7-plus",
-            messages=[
-                {
-                    "role": "system",
-                    "content": (
-                        "You are a strict data-formatting pipeline. You will receive images. "
-                        "You MUST wrap your final answer inside exact <caption_output> and "
-                        "</caption_output> tags. Do NOT output any thinking process."
-                    )
-                },
-                {"role": "user", "content": content}
-            ],
-            max_tokens=100,
-            temperature=0.3,
-            extra_body={"reasoning_effort": "none"}
-        )
-
-        raw_output = response.choices[0].message.content.strip()
-        match = re.search(r'<caption_output>(.*?)</caption_output>', raw_output, re.DOTALL)
-
-        if match:
-            description = match.group(1).strip()
-            if description:
-                return description
-
-        return "[DESCRIPTION_FAILED: malformed model output]"
-
-    except Exception as e:
-        print(f"  -> API Error (description): {e}")
-        return f"[DESCRIPTION_FAILED: API error: {e}]"
+    
