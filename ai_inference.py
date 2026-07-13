@@ -22,40 +22,32 @@ def get_style_prompt(style):
     '''
     prompts for different styles
     '''
-    # Forces the model to ground the caption in one real, specific visual
-    # detail before layering on persona, instead of leaning purely on
-    # mood/metaphor and drifting away from what's actually in the video.
-    anchor = (
-        "\n\nBefore writing, silently pick ONE specific, vivid detail you actually see "
-        "in the frames - a color, an object, an action, text/signage, a number, anything concrete. "
-        "Build your one-line caption around that specific detail, filtered through your persona's voice. "
-        "A caption anchored in one real detail beats one built purely on mood or metaphor."
-    )
-
     guard = (
-        "\n\n### CRITICAL INSTRUCTIONS ###\n"
-        "1. You MUST wrap your final caption inside exact <caption_output> and </caption_output> tags.\n"
-        "2. Do NOT put anything else inside the tags.\n"
-        "3. Do NOT explain your thinking or write a checklist.\n"
-        "4. Do NOT use Markdown formatting (no asterisks, no headers, no bullet points). Plain text only.\n"
-        "5. Go straight into the caption - no preamble like 'Bug Report:' or 'Caption:' before the tag.\n"
-        "6. Keep the caption to 1-2 sentences, no more than about 30 words total. One punchy, "
-        "specific line beats a paragraph - like a witty caption under a photo, not a description.\n"
-        "7. Write in third person, as an observation ABOUT the scene - never first person ('I', 'we', "
-        "'my'), never speaking directly TO the viewer as 'you'. Describe what is happening, filtered "
-        "through your persona's voice and word choice, not as a character narrating their own experience."
+        "\n\n### RULES ###\n"
+        "1. Write in third person, describing the scene from outside it - never 'I', 'we', 'my', "
+        "and never speak to the reader as 'you'.\n"
+        "2. Refer to people naturally (a man, a woman, the worker, she, he) - never say 'the subject', "
+        "'biological unit', or any clinical/robotic term for a person.\n"
+        "3. Your caption must cover at least TWO different elements of the scene - for example, the "
+        "setting AND the main action, or the subject AND their surroundings. Never build the entire "
+        "caption around a single object, sign, text, or small detail (like a logo, nail polish, or a "
+        "piece of clothing) - such things can be mentioned in passing, never as the whole focus.\n"
+        "4. Describe what is actually happening in plain, everyday words - not camera or photography "
+        "terms like 'motion blur', 'temporal exposure', or 'long exposure'. Say what you'd say to a "
+        "friend describing the scene, not what a camera manual would say.\n"
+        "5. Keep it to 1-2 sentences, under 35 words.\n"
+        "6. Wrap the caption in exact <caption_output></caption_output> tags, nothing else inside them. "
+        "No Markdown, no preamble, no explanation."
     )
 
     prompts = {
-        "formal": "Analyse the visual, with the cold attitude of HAL-9000 with purely factual, emotionless tone.",
-        "sarcastic": "Analyze the visual with a very deadpan and sarcastic tone and eye-rolling, describe with incredible wit and condescending tone.",
-        "humorous_tech": "Describe the visual by using clever technical jargon, remember it cleverly blend the technological jargon to the visual do not divert from the visual itself, but make it effective in being absolutely funny and understandably humorous.",
-        "humorous_non_tech": "Give a very funny and relatable attitude when describing the visual sequence in a very casual, laidback manner, Do not use technical jargon and do not give very niche references."
+        "formal": "Describe the visual plainly and factually, in simple natural language - like a calm, precise observer stating what is happening. Avoid technical or photographic terminology.",        
+        "sarcastic": "Describe the visual with sharp, biting sarcasm - mock enthusiasm, dripping irony, or exaggerated praise for something painfully ordinary. Make it genuinely cutting, not just mildly unimpressed. Think a cynical friend who can't resist a jab at anything they see.",
+        "humorous_tech": "Describe the visual using a clever tech/programming metaphor that maps onto what's actually happening on screen.",
+        "humorous_non_tech": "Describe the visual with simple, relatable, everyday humor - no technical jargon, no niche references.",
     }
 
-    return prompts.get(style, f"Caption this in a {style} tone.") + anchor + guard
-
-
+    return prompts.get(style, f"Caption this in a {style} tone.") + " " + guard
 def sample_frames(frame_paths, num_samples=4):
     '''Gets num_samples evenly spaced frames from the full extracted set, not just a single frame'''
     total = len(frame_paths)
@@ -75,7 +67,7 @@ def sample_frames(frame_paths, num_samples=4):
 
 def generate_caption(frame_paths, style):
     """Sends multiple sampled frames and the text prompt to a Fireworks Vision model."""
-    print(f"Generating '{style}' caption from Qwen....")
+    print(f"Generating '{style}' caption......")
 
     try:
         # Sample several frames across the clip instead of just the middle one,
@@ -116,7 +108,7 @@ def generate_caption(frame_paths, style):
                     "content": content
                 }
             ],
-            max_tokens=120,
+            max_tokens=200,
             temperature=0.7,
             extra_body={"reasoning_effort": "none"}
         )
