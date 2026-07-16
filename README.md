@@ -8,7 +8,7 @@ Quiptionary is a video captioning agent built for the AMD Developer Hackathon (T
 
 | Style | Character |
 |---|---|
-| `formal` | Cold, clinical precision — a HAL-9000-esque narrator |
+| `formal` | Cold, clinical precision, a HAL-9000-esque narrator |
 | `sarcastic` | Weary, condescending observer, dry wit |
 | `humorous_tech` | A burnt-out AI engineer narrating the world through bug reports |
 | `humorous_non_tech` | An out-of-touch fifty-something bewildered by modern life |
@@ -16,10 +16,10 @@ Quiptionary is a video captioning agent built for the AMD Developer Hackathon (T
 ## How it works
 
 1. **Download** — fetch the clip from its URL
-2. **Sample frames** — 4 evenly spaced frames pulled across the full clip (not just one snapshot), downscaled for faster inference
-3. **Style prompt** — each style is a full persona prompt with strict output-format rules
-4. **Vision model** — Qwen3.7 Plus (via Fireworks AI), reasoning/thinking mode disabled for speed and reliability
-5. **Parse + verify** — extracts the tagged caption; any failure is clearly labeled rather than silently returned as broken text
+2. **Sample frames** - 4 evenly spaced frames pulled across the full clip (not just one snapshot), downscaled for faster inference
+3. **Style prompt** - each style is a full persona prompt with strict output-format rules
+4. **Vision model** - Qwen3.7 Plus (via Fireworks AI), reasoning/thinking mode disabled for speed and reliability
+5. **Parse + verify** - extracts the tagged caption; any failure is clearly labeled rather than silently returned as broken text
 
 Handles clips from 30 seconds to 2 minutes, well within the 10-minute container runtime limit.
 
@@ -56,11 +56,11 @@ streamlit run streamlit_app.py
 
 ## Tech stack
 
-- **Fireworks AI** — hosted inference
-- **Qwen3.7 Plus (vision)** — multi-image captioning
-- **OpenCV** — frame extraction and downscaling
-- **Docker** — `linux/amd64`, built and pushed via GitHub Actions to GHCR
-- **Streamlit** — live demo UI
+- **Fireworks AI** - hosted inference
+- **Qwen3.7 Plus (vision)** - multi-image captioning
+- **OpenCV** - frame extraction and downscaling
+- **Docker** - `linux/amd64`, built and pushed via GitHub Actions to GHCR
+- **Streamlit** - live demo UI
 
 ## Image
 
