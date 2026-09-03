@@ -28,13 +28,13 @@ Handles clips from 30 seconds to 2 minutes, well within the 10-minute container 
 ### Docker
 
 ```bash
-docker pull ghcr.io/<your-github-username>/video-caption-agent:latest
+docker pull ghcr.io/praneethd2007-a11y/video-caption-agent:latest
 
 docker run --rm \
   -e FIREWORKS_API_KEY=your_key_here \
   -v "$(pwd)/input:/input" \
   -v "$(pwd)/output:/output" \
-  ghcr.io/<your-github-username>/video-caption-agent:latest
+  ghcr.io/praneethd2007-a11y/video-caption-agent:latest
 ```
 
 Reads tasks from `/input/tasks.json`, writes results to `/output/results.json`.
@@ -65,5 +65,5 @@ streamlit run streamlit_app.py
 ## Image
 
 ```
-ghcr.io/<your-github-username>/video-caption-agent:latest
+ghcr.io/praneethd2007-a11y/video-caption-agent:latest
 ```
